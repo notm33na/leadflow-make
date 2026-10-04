@@ -1,0 +1,16 @@
+{
+  "schema_version": "1",
+  "submission_id": "{{SUBMISSION_ID}}",
+  "submitted_at": "2026-10-04T10:00:00Z",
+  "name": "Nadia Rahman",
+  "email": "{{TEST_EMAIL+s2}}",
+  "company": "Rahman Accountants",
+  "website": "rahman-accounts.example",
+  "service": "paid_ads",
+  "budget": "2k_5k",
+  "timeline": "1_3_months",
+  "message": "Small accountancy firm wanting Google and LinkedIn ads to win limited-company clients before the tax deadline.",
+  "consent": true,
+  "fax_number": "",
+  "fill_time_ms": 47100
+}

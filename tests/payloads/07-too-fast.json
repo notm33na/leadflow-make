@@ -1,0 +1,16 @@
+{
+  "schema_version": "1",
+  "submission_id": "{{SUBMISSION_ID}}",
+  "submitted_at": "2026-10-04T10:00:00Z",
+  "name": "Casey Brown",
+  "email": "t07-{{RUN_ID}}@example.com",
+  "company": "Brown Bakery",
+  "website": "",
+  "service": "web_design",
+  "budget": "2k_5k",
+  "timeline": "3_6_months",
+  "message": "We need a simple website for our bakery with opening hours and a menu.",
+  "consent": true,
+  "fax_number": "",
+  "fill_time_ms": 900
+}

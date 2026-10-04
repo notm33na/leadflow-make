@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://leadflow.example/schemas/lead-submission.v1.json",
+  "title": "LeadFlow lead submission v1 (mirror of docs/ARCHITECTURE.md §4.1)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "submission_id", "name", "email", "service", "budget",
+               "timeline", "message", "consent", "fax_number", "fill_time_ms"],
+  "properties": {
+    "schema_version": { "const": "1" },
+    "submission_id":  { "type": "string", "format": "uuid" },
+    "submitted_at":   { "type": "string", "format": "date-time" },
+    "name":           { "type": "string", "minLength": 2, "maxLength": 100 },
+    "email":          { "type": "string", "format": "email", "maxLength": 254, "pattern": "^[A-Za-z0-9][^\\s@<>&]*@[^\\s@<>&]+\\.[^\\s@<>&]{2,}$" },
+    "company":        { "type": "string", "maxLength": 120 },
+    "website":        { "type": "string", "maxLength": 200 },
+    "service":        { "enum": ["web_design", "seo", "paid_ads", "branding", "other"] },
+    "budget":         { "enum": ["under_2k", "2k_5k", "5k_10k", "over_10k", "not_sure"] },
+    "timeline":       { "enum": ["asap", "1_3_months", "3_6_months", "exploring"] },
+    "message":        { "type": "string", "minLength": 20, "maxLength": 2000 },
+    "consent":        { "const": true },
+    "fax_number":     { "type": "string" },
+    "fill_time_ms":   { "type": "integer", "minimum": 0 },
+    "utm": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "source":   { "type": "string", "maxLength": 100 },
+        "medium":   { "type": "string", "maxLength": 100 },
+        "campaign": { "type": "string", "maxLength": 100 }
+      }
+    },
+    "page_url": { "type": "string", "maxLength": 500 }
+  }
+}

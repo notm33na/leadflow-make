@@ -1,0 +1,16 @@
+{
+  "schema_version": "1",
+  "submission_id": "{{SUBMISSION_ID}}",
+  "submitted_at": "2026-10-04T10:00:00Z",
+  "name": "Hannah Okafor",
+  "email": "{{TEST_EMAIL+fb}}",
+  "company": "Okafor Architecture",
+  "website": "okafor-arch.example",
+  "service": "web_design",
+  "budget": "over_10k",
+  "timeline": "asap",
+  "message": "Award-winning architecture studio launching a new brand in five weeks. We need a portfolio website with project case studies, a CMS our team can update, and integration with our existing newsletter platform. Budget approved.",
+  "consent": true,
+  "fax_number": "",
+  "fill_time_ms": 61400
+}

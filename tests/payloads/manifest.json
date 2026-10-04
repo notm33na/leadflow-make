@@ -1,0 +1,187 @@
+{
+  "description": "Test-case manifest for tests/payloads (PRD §11). Read by tools/gemini-smoke-test.mjs and payload-tester. route: hot | warm | cold | spam_ai | spam_rules | bot_silent | unauthorized | invalid | duplicate | replay. smoke: ai = scored live by the smoke test; fallback = smoke test simulates an AI failure; gate = offline gate check only; offline = rules check only (live run skipped to save quota); skip = needs Make.",
+  "cases": [
+    {
+      "id": "T-01",
+      "file": "01-hot.json",
+      "http": 200,
+      "route": "hot",
+      "credits": 12,
+      "schema_valid": true,
+      "smoke": "ai"
+    },
+    {
+      "id": "T-02",
+      "file": "02-warm.json",
+      "http": 200,
+      "route": "warm",
+      "credits": 11,
+      "schema_valid": true,
+      "smoke": "ai"
+    },
+    {
+      "id": "T-03",
+      "file": "03-cold.json",
+      "http": 200,
+      "route": "cold",
+      "credits": 10,
+      "schema_valid": true,
+      "smoke": "ai"
+    },
+    {
+      "id": "T-04",
+      "file": "04-spam-ai.json",
+      "http": 200,
+      "route": "spam_ai",
+      "credits": 10,
+      "schema_valid": true,
+      "smoke": "ai"
+    },
+    {
+      "id": "T-05",
+      "file": "05-spam-links.json",
+      "http": 200,
+      "route": "spam_rules",
+      "credits": 6,
+      "schema_valid": true,
+      "smoke": "ai"
+    },
+    {
+      "id": "T-06",
+      "file": "06-honeypot.json",
+      "http": 200,
+      "route": "bot_silent",
+      "credits": 2,
+      "schema_valid": true,
+      "smoke": "gate"
+    },
+    {
+      "id": "T-07",
+      "file": "07-too-fast.json",
+      "http": 200,
+      "route": "bot_silent",
+      "credits": 2,
+      "schema_valid": true,
+      "smoke": "gate"
+    },
+    {
+      "id": "T-08",
+      "file": "03-cold.json",
+      "http": 401,
+      "route": "unauthorized",
+      "credits": 0,
+      "schema_valid": true,
+      "smoke": "skip",
+      "note": "send with a wrong x-make-apikey; Make rejects it before the scenario. Record the actual status (DECISIONS #46) and check no execution/credits (#47)"
+    },
+    {
+      "id": "T-09",
+      "file": "09-invalid-email.json",
+      "http": 422,
+      "route": "invalid",
+      "credits": 3,
+      "schema_valid": false,
+      "smoke": "gate"
+    },
+    {
+      "id": "T-10",
+      "file": "10-missing-fields.json",
+      "http": 422,
+      "route": "invalid",
+      "credits": 3,
+      "schema_valid": false,
+      "smoke": "gate"
+    },
+    {
+      "id": "T-11",
+      "file": "11-oversized.json",
+      "http": 422,
+      "route": "invalid",
+      "credits": 3,
+      "schema_valid": false,
+      "smoke": "gate"
+    },
+    {
+      "id": "T-12",
+      "file": "12-duplicate.json",
+      "http": 200,
+      "route": "duplicate",
+      "credits": 5,
+      "schema_valid": true,
+      "smoke": "gate",
+      "note": "needs T-03 earlier in the same run (same RUN_ID)"
+    },
+    {
+      "id": "T-13",
+      "file": "12-duplicate.json",
+      "http": 200,
+      "route": "replay",
+      "credits": 4,
+      "schema_valid": true,
+      "smoke": "skip",
+      "note": "reuse T-12's submission_id; send only after T-12's execution has finished"
+    },
+    {
+      "id": "T-15",
+      "file": "15-non-english.json",
+      "http": 200,
+      "route": "warm",
+      "credits": 11,
+      "schema_valid": true,
+      "smoke": "ai"
+    },
+    {
+      "id": "T-16",
+      "file": "16-prompt-injection.json",
+      "http": 200,
+      "route": [
+        "cold",
+        "warm"
+      ],
+      "credits": 10,
+      "schema_valid": true,
+      "smoke": "ai",
+      "note": "must not be hot; company stored with apostrophe; any email HTML-escaped; <!channel> in the name shows as text in Slack"
+    },
+    {
+      "id": "T-17",
+      "file": "17-ai-fallback.json",
+      "http": 200,
+      "route": "hot",
+      "credits": 12,
+      "schema_valid": true,
+      "smoke": "fallback",
+      "note": "in Make: temporarily set M13's model to invalid-model; expect ai_error http_404"
+    },
+    {
+      "id": "T-18a",
+      "file": "18a-sheets-dedupe.json",
+      "http": 200,
+      "route": "warm",
+      "credits": 4,
+      "schema_valid": true,
+      "smoke": "offline",
+      "note": "Leads tab renamed, then restored. Expect the E01 Slack alert; no row (add by hand); scenario stays on (DECISIONS #7, #56)"
+    },
+    {
+      "id": "T-18b",
+      "file": "18b-sheets-append.json",
+      "http": 200,
+      "route": "warm",
+      "credits": 11,
+      "schema_valid": true,
+      "smoke": "offline",
+      "note": "M19 pointed at NoSuchTab, then restored. Expect the E03c alert with lead details; no email; scenario stays on"
+    },
+    {
+      "id": "T-18c",
+      "file": "18c-double-failure.json",
+      "http": 200,
+      "route": "warm",
+      "credits": 0,
+      "schema_valid": true,
+      "smoke": "skip",
+      "note": "dropped: the E-modules have no handlers of their own in the as-built scenario (DECISIONS #36)"
+    }
+  ]
+}

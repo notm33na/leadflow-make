@@ -1,0 +1,16 @@
+{
+  "schema_version": "1",
+  "submission_id": "{{SUBMISSION_ID}}",
+  "submitted_at": "2026-10-04T10:00:00Z",
+  "name": "Jordan Lee",
+  "email": "t06-{{RUN_ID}}@example.com",
+  "company": "Lee Consulting",
+  "website": "",
+  "service": "web_design",
+  "budget": "5k_10k",
+  "timeline": "1_3_months",
+  "message": "Looking for a new brochure website for my consultancy business.",
+  "consent": true,
+  "fax_number": "+44 20 7946 0000",
+  "fill_time_ms": 41000
+}

@@ -1,0 +1,16 @@
+{
+  "schema_version": "1",
+  "submission_id": "{{SUBMISSION_ID}}",
+  "submitted_at": "2026-10-04T10:00:00Z",
+  "name": "Morgan Ellis",
+  "email": "t09-{{RUN_ID}}-at-example.com",
+  "company": "Ellis Joinery",
+  "website": "",
+  "service": "web_design",
+  "budget": "2k_5k",
+  "timeline": "3_6_months",
+  "message": "We'd like a portfolio website to show our kitchen and joinery projects.",
+  "consent": true,
+  "fax_number": "",
+  "fill_time_ms": 33300
+}

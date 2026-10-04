@@ -1,0 +1,17 @@
+{
+  "schema_version": "1",
+  "submission_id": "{{SUBMISSION_ID}}",
+  "submitted_at": "2026-10-04T10:00:00Z",
+  "name": "Tom Becker",
+  "email": "{{TEST_EMAIL+warm}}",
+  "company": "Becker Family Dental",
+  "website": "beckerdental.example",
+  "service": "paid_ads",
+  "budget": "2k_5k",
+  "timeline": "1_3_months",
+  "message": "Two-chair dental practice wanting to try Google Ads for implant and Invisalign bookings. Never run ads; need setup and management.",
+  "consent": true,
+  "fax_number": "",
+  "fill_time_ms": 51877,
+  "page_url": "https://leadflow-demo.example/"
+}

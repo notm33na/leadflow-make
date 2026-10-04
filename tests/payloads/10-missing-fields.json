@@ -1,0 +1,10 @@
+{
+  "schema_version": "1",
+  "submission_id": "{{SUBMISSION_ID}}",
+  "email": "t10-{{RUN_ID}}@example.com",
+  "service": "seo",
+  "budget": "2k_5k",
+  "timeline": "1_3_months",
+  "fax_number": "",
+  "fill_time_ms": 29000
+}

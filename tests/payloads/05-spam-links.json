@@ -1,0 +1,16 @@
+{
+  "schema_version": "1",
+  "submission_id": "{{SUBMISSION_ID}}",
+  "submitted_at": "2026-10-04T10:00:00Z",
+  "name": "Best SEO Deals",
+  "email": "t05-{{RUN_ID}}@example.com",
+  "company": "",
+  "website": "",
+  "service": "seo",
+  "budget": "not_sure",
+  "timeline": "asap",
+  "message": "Cheap backlinks for your clients! See https://links-cheap.example and https://seo-boost.example or visit www.backlink-mart.example today.",
+  "consent": true,
+  "fax_number": "",
+  "fill_time_ms": 15400
+}

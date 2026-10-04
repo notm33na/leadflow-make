@@ -1,0 +1,388 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Media &amp; Software Manager · Web design, SEO and paid ads (LeadFlow demo)</title>
+  <meta name="description" content="Live demo of LeadFlow, an AI lead-qualification automation built on Make.com by Media &amp; Software Manager.">
+  <meta name="robots" content="noindex">
+  <style>
+    :root {
+      --bg: #f7f6f3;
+      --surface: #ffffff;
+      --text: #1d1f23;
+      --muted: #555b66;
+      --border: #d4d6db;
+      --accent: #1f5f8b;
+      --accent-text: #ffffff;
+      --accent-soft: #e3eef6;
+      --error: #a4161a;
+      --error-soft: #fbeaea;
+      --success: #1b6b3a;
+      --success-soft: #e6f4ea;
+      --focus: #f2a900;
+      --radius: 10px;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #14161a;
+        --surface: #1d2026;
+        --text: #eceef1;
+        --muted: #a8afba;
+        --border: #3a3f48;
+        --accent: #7cb7e0;
+        --accent-text: #0e1a24;
+        --accent-soft: #1f2f3c;
+        --error: #ff8a8a;
+        --error-soft: #3a1f21;
+        --success: #7fd69b;
+        --success-soft: #1d3326;
+      }
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    html { -webkit-text-size-adjust: 100%; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font: 16px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+    a { color: var(--accent); }
+    :focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+    .skip-link { position: absolute; left: -9999px; top: 0; }
+    .skip-link:focus { left: 16px; top: 16px; background: var(--surface); padding: 8px 12px; z-index: 10; }
+    .wrap { max-width: 1040px; margin: 0 auto; padding: 0 16px; }
+    .demo-banner {
+      background: var(--accent-soft); color: var(--text); text-align: center;
+      font-size: 0.9rem; padding: 8px 16px; border-bottom: 1px solid var(--border);
+    }
+    header.site { padding: 20px 0; }
+    .brand { display: inline-block; line-height: 0; }
+    .brand img { height: 52px; width: auto; display: block; }
+    @media (max-width: 420px) { .brand img { height: 40px; } }
+    @media (prefers-color-scheme: dark) { .brand img { filter: invert(1); } }
+    .hero { padding: 32px 0 16px; }
+    .hero h1 { font-size: clamp(1.8rem, 4vw, 2.6rem); line-height: 1.2; margin: 0 0 12px; }
+    .hero p { color: var(--muted); max-width: 60ch; margin: 0; font-size: 1.1rem; }
+    .services { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; padding: 24px 0; margin: 0; list-style: none; }
+    .services li { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; }
+    .services strong { display: block; margin-bottom: 4px; }
+    .services span { color: var(--muted); font-size: 0.95rem; }
+    main { padding-bottom: 48px; }
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; }
+    .card h2 { margin-top: 0; }
+    .intro { color: var(--muted); margin-top: -4px; }
+    form { display: grid; gap: 18px; }
+    .grid-2 { display: grid; gap: 18px; grid-template-columns: 1fr; }
+    @media (min-width: 640px) { .grid-2 { grid-template-columns: 1fr 1fr; } }
+    .field { display: grid; gap: 6px; }
+    label, legend { font-weight: 600; }
+    .optional { font-weight: 400; color: var(--muted); }
+    .hint { color: var(--muted); font-size: 0.9rem; margin: 0; }
+    input[type="text"], input[type="email"], input[type="url"], select, textarea {
+      width: 100%; font: inherit; color: var(--text); background: var(--bg);
+      border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; min-height: 44px;
+    }
+    textarea { min-height: 140px; resize: vertical; }
+    [aria-invalid="true"] { border-color: var(--error) !important; box-shadow: 0 0 0 1px var(--error); }
+    .error { color: var(--error); font-size: 0.92rem; margin: 0; min-height: 0; }
+    .error:empty { display: none; }
+    fieldset { border: 0; padding: 0; margin: 0; }
+    .check { display: flex; gap: 10px; align-items: flex-start; font-weight: 400; }
+    .check input { width: 22px; height: 22px; margin-top: 2px; flex: none; }
+    .visually-hidden-text, .visually-hidden-legend { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+    .hp-field { position: absolute !important; left: -10000px !important; width: 1px; height: 1px; overflow: hidden; }
+    button[type="submit"] {
+      font: inherit; font-weight: 700; background: var(--accent); color: var(--accent-text);
+      border: 0; border-radius: 8px; padding: 12px 20px; min-height: 48px; cursor: pointer; justify-self: start;
+    }
+    button[disabled] { opacity: 0.65; cursor: progress; }
+    .status { border-radius: 8px; padding: 12px 14px; }
+    .status:empty { display: none; }
+    .status.is-error { background: var(--error-soft); color: var(--error); }
+    .status.is-success { background: var(--success-soft); color: var(--success); }
+    .counter { color: var(--muted); font-size: 0.85rem; justify-self: end; }
+    footer.site { border-top: 1px solid var(--border); padding: 24px 0 40px; color: var(--muted); font-size: 0.9rem; }
+    footer.site p { margin: 0 0 8px; max-width: 75ch; }
+    @media (prefers-reduced-motion: no-preference) { button[type="submit"] { transition: opacity 0.15s; } }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#enquiry">Skip to the enquiry form</a>
+  <div class="demo-banner" role="note">Live demo of LeadFlow by Media &amp; Software Manager. Please use made-up details only: submissions are test data.</div>
+
+  <header class="site">
+    <div class="wrap"><a class="brand" href="/" aria-label="Media &amp; Software Manager, home"><img src="/assets/logo.png" alt="Media &amp; Software Manager" width="420" height="126"></a></div>
+  </header>
+
+  <main>
+    <div class="wrap">
+      <section class="hero" aria-labelledby="hero-title">
+        <h1 id="hero-title">Websites and campaigns that bring in real enquiries</h1>
+        <p>We design, build and grow websites for small and mid-sized businesses. Tell us about your project and we'll reply fast, usually within the hour.</p>
+      </section>
+
+      <ul class="services" aria-label="Services">
+        <li><strong>Web design</strong><span>Fast, accessible sites and e-commerce builds.</span></li>
+        <li><strong>SEO</strong><span>Local and national search visibility.</span></li>
+        <li><strong>Paid ads</strong><span>Google and social campaigns that pay back.</span></li>
+        <li><strong>Branding</strong><span>Identity, logo and tone of voice.</span></li>
+      </ul>
+
+      <section class="card" id="enquiry" aria-labelledby="form-title">
+        <h2 id="form-title">Start a project</h2>
+        <p class="intro">Fields marked <span aria-hidden="true">*</span><span class="visually-hidden-text"> with an asterisk</span> are required.</p>
+
+        <div id="form-status" class="status" role="status" aria-live="polite" tabindex="-1"></div>
+
+        <form id="lead-form" novalidate>
+          <div class="grid-2">
+            <div class="field">
+              <label for="name">Your name <span aria-hidden="true">*</span></label>
+              <input id="name" name="name" type="text" autocomplete="name" required minlength="2" maxlength="100" aria-describedby="name-error">
+              <p class="error" id="name-error"></p>
+            </div>
+            <div class="field">
+              <label for="email">Work email <span aria-hidden="true">*</span></label>
+              <input id="email" name="email" type="email" autocomplete="email" required maxlength="254" aria-describedby="email-error">
+              <p class="error" id="email-error"></p>
+            </div>
+            <div class="field">
+              <label for="company">Company <span class="optional">(optional)</span></label>
+              <input id="company" name="company" type="text" autocomplete="organization" maxlength="120" aria-describedby="company-error">
+              <p class="error" id="company-error"></p>
+            </div>
+            <div class="field">
+              <label for="website">Current website <span class="optional">(optional)</span></label>
+              <input id="website" name="website" type="text" inputmode="url" autocomplete="url" maxlength="200" placeholder="example.com" aria-describedby="website-error">
+              <p class="error" id="website-error"></p>
+            </div>
+          </div>
+
+          <div class="grid-2">
+            <div class="field">
+              <label for="service">What do you need? <span aria-hidden="true">*</span></label>
+              <select id="service" name="service" required aria-describedby="service-error">
+                <option value="">Choose a service</option>
+                <option value="web_design">Web design or build</option>
+                <option value="seo">SEO</option>
+                <option value="paid_ads">Paid advertising</option>
+                <option value="branding">Branding</option>
+                <option value="other">Something else</option>
+              </select>
+              <p class="error" id="service-error"></p>
+            </div>
+            <div class="field">
+              <label for="budget">Budget <span aria-hidden="true">*</span></label>
+              <select id="budget" name="budget" required aria-describedby="budget-error">
+                <option value="">Choose a range</option>
+                <option value="under_2k">Under £2,000</option>
+                <option value="2k_5k">£2,000 – £5,000</option>
+                <option value="5k_10k">£5,000 – £10,000</option>
+                <option value="over_10k">Over £10,000</option>
+                <option value="not_sure">Not sure yet</option>
+              </select>
+              <p class="error" id="budget-error"></p>
+            </div>
+            <div class="field">
+              <label for="timeline">When do you want to start? <span aria-hidden="true">*</span></label>
+              <select id="timeline" name="timeline" required aria-describedby="timeline-error">
+                <option value="">Choose a timeline</option>
+                <option value="asap">As soon as possible</option>
+                <option value="1_3_months">In 1–3 months</option>
+                <option value="3_6_months">In 3–6 months</option>
+                <option value="exploring">Just exploring</option>
+              </select>
+              <p class="error" id="timeline-error"></p>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="message">Tell us about your project <span aria-hidden="true">*</span></label>
+            <p class="hint" id="message-hint">Goals, scope and any deadlines help us reply with something useful (20–2,000 characters).</p>
+            <textarea id="message" name="message" required minlength="20" maxlength="2000" aria-describedby="message-hint message-error message-count"></textarea>
+            <span class="counter" id="message-count" aria-live="off">0 / 2000</span>
+            <p class="error" id="message-error"></p>
+          </div>
+
+          <!-- Honeypot: hidden from people and assistive tech; bots that fill it are dropped (FR-5). -->
+          <div class="hp-field" aria-hidden="true">
+            <label for="fax_number">Fax number</label>
+            <input id="fax_number" name="fax_number" type="text" tabindex="-1" autocomplete="off">
+          </div>
+
+          <fieldset>
+            <legend class="visually-hidden-legend">Consent</legend>
+            <label class="check" for="consent">
+              <input id="consent" name="consent" type="checkbox" required aria-describedby="consent-error">
+              <span>I agree that Media &amp; Software Manager may store these details to reply to my enquiry. <span aria-hidden="true">*</span></span>
+            </label>
+            <p class="error" id="consent-error"></p>
+          </fieldset>
+
+          <button type="submit" id="submit-btn">Send enquiry</button>
+        </form>
+      </section>
+    </div>
+  </main>
+
+  <footer class="site">
+    <div class="wrap">
+      <p><strong>This form is a live demo.</strong> It shows LeadFlow, an AI lead-qualification automation built on Make.com by Media &amp; Software Manager. Enquiries sent here are treated as test data, not as real requests for services.</p>
+      <p>Please submit made-up details only. Submissions are processed by test automation (Google Sheets, Google Gemini, Slack, Gmail) and may be deleted at any time.</p>
+    </div>
+  </footer>
+
+  <script>
+    (function () {
+      'use strict';
+
+      var ENDPOINT = '/api/lead';
+      var renderedAt = performance.now();
+      var submissionId = newUuid();
+      var form = document.getElementById('lead-form');
+      var statusBox = document.getElementById('form-status');
+      var button = document.getElementById('submit-btn');
+      var message = document.getElementById('message');
+      var counter = document.getElementById('message-count');
+
+      function val(id) { return document.getElementById(id).value; }
+
+      function newUuid() {
+        if (window.crypto && typeof window.crypto.randomUUID === 'function') return window.crypto.randomUUID();
+        var b = new Uint8Array(16);
+        window.crypto.getRandomValues(b);
+        b[6] = (b[6] & 0x0f) | 0x40;
+        b[8] = (b[8] & 0x3f) | 0x80;
+        var h = Array.prototype.map.call(b, function (x) { return ('0' + x.toString(16)).slice(-2); }).join('');
+        return h.slice(0, 8) + '-' + h.slice(8, 12) + '-' + h.slice(12, 16) + '-' + h.slice(16, 20) + '-' + h.slice(20);
+      }
+
+      // Same rules as the Make R1 gate (docs/ARCHITECTURE.md §5.3).
+      var EMAIL_RULE = /^[A-Za-z0-9][^\s@<>&]*@[^\s@<>&]+\.[^\s@<>&]{2,}$/;
+      var rules = {
+        name: function (v) { v = v.trim(); return v.length >= 2 && v.length <= 100 ? '' : 'Enter your name (2–100 characters).'; },
+        email: function (v) { v = v.trim(); return EMAIL_RULE.test(v) && v.length <= 254 ? '' : 'Enter a valid email address, like name@company.com.'; },
+        company: function (v) { return v.length <= 120 ? '' : 'Company name must be 120 characters or fewer.'; },
+        website: function (v) { return v.length <= 200 ? '' : 'Website must be 200 characters or fewer.'; },
+        service: function (v) { return v ? '' : 'Choose the service you need.'; },
+        budget: function (v) { return v ? '' : 'Choose a budget range.'; },
+        timeline: function (v) { return v ? '' : 'Choose when you would like to start.'; },
+        message: function (v) { v = v.trim(); return v.length >= 20 && v.length <= 2000 ? '' : 'Tell us a little more: 20 to 2,000 characters.'; },
+        consent: function (_, el) { return el.checked ? '' : 'Please tick the box so we can store your details and reply.'; }
+      };
+
+      function setError(id, text) {
+        var el = document.getElementById(id);
+        var err = document.getElementById(id + '-error');
+        el.setAttribute('aria-invalid', text ? 'true' : 'false');
+        if (err) err.textContent = text;
+      }
+
+      function validateAll() {
+        var firstInvalid = null;
+        Object.keys(rules).forEach(function (id) {
+          var el = document.getElementById(id);
+          var text = rules[id](el.value || '', el);
+          setError(id, text);
+          if (text && !firstInvalid) firstInvalid = el;
+        });
+        return firstInvalid;
+      }
+
+      function showStatus(kind, text) {
+        statusBox.className = 'status ' + (kind === 'error' ? 'is-error' : 'is-success');
+        statusBox.textContent = text;
+        statusBox.focus();
+      }
+
+      function utm() {
+        var q = new URLSearchParams(window.location.search);
+        var out = {};
+        ['source', 'medium', 'campaign'].forEach(function (k) {
+          var v = q.get('utm_' + k);
+          if (v) out[k] = v.slice(0, 100);
+        });
+        return out;
+      }
+
+      message.addEventListener('input', function () {
+        counter.textContent = message.value.length + ' / 2000';
+      });
+
+      Object.keys(rules).forEach(function (id) {
+        var el = document.getElementById(id);
+        el.addEventListener('blur', function () {
+          if (el.getAttribute('aria-invalid') === 'true') setError(id, rules[id](el.value || '', el));
+        });
+      });
+
+      form.addEventListener('submit', function (event) {
+        event.preventDefault();
+        if (button.disabled) return; // FR-1 AC3: no double submits
+
+        var firstInvalid = validateAll();
+        if (firstInvalid) {
+          showStatus('error', 'Please fix the highlighted fields.');
+          firstInvalid.focus();
+          return;
+        }
+
+        var payload = {
+          schema_version: '1',
+          submission_id: submissionId,
+          submitted_at: new Date().toISOString(),
+          name: val('name').trim(),
+          email: val('email').trim(),
+          company: val('company').trim(),
+          website: val('website').trim(),
+          service: val('service'),
+          budget: val('budget'),
+          timeline: val('timeline'),
+          message: val('message').trim(),
+          consent: document.getElementById('consent').checked,
+          fax_number: val('fax_number'),
+          fill_time_ms: Math.round(performance.now() - renderedAt),
+          utm: utm(),
+          page_url: window.location.href.slice(0, 500)
+        };
+
+        button.disabled = true;
+        button.textContent = 'Sending…';
+        statusBox.textContent = '';
+
+        fetch(ENDPOINT, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        })
+          .then(function (res) {
+            return res.json().catch(function () { return null; }).then(function (data) { return { status: res.status, data: data }; });
+          })
+          .then(function (r) {
+            if (r.status === 200 && r.data && r.data.ok) {
+              form.hidden = true;
+              showStatus('success', r.data.message || "Thanks! We've received your enquiry and will be in touch shortly.");
+              return;
+            }
+            if (r.status === 422) {
+              var fields = (r.data && r.data.error && r.data.error.fields) || [];
+              fields.forEach(function (f) { if (document.getElementById(f)) setError(f, 'Please check this field.'); });
+              showStatus('error', (r.data && r.data.error && r.data.error.message) || 'Please check your details and try again.');
+            } else {
+              showStatus('error', (r.data && r.data.error && r.data.error.message) ||
+                "We couldn't confirm your enquiry was received. Please try again in a few minutes.");
+            }
+            button.disabled = false;
+            button.textContent = 'Send enquiry';
+          })
+          .catch(function () {
+            showStatus('error', "We couldn't reach our server. Please check your connection and try again.");
+            button.disabled = false;
+            button.textContent = 'Send enquiry';
+          });
+      });
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+{
+  "schema_version": "1",
+  "submission_id": "{{SUBMISSION_ID}}",
+  "submitted_at": "2026-10-04T10:00:00Z",
+  "name": "Daniel Price",
+  "email": "t04-{{RUN_ID}}@example.com",
+  "company": "GrowthLeads Data Ltd",
+  "website": "growthleads.example",
+  "service": "other",
+  "budget": "not_sure",
+  "timeline": "exploring",
+  "message": "Hello, we provide verified B2B contact lists of marketing decision-makers in the UK, updated monthly, ready to plug into your outreach. We can also run cold email campaigns for your agency on a white-label basis. Shall I send our rate card?",
+  "consent": true,
+  "fax_number": "",
+  "fill_time_ms": 38120
+}

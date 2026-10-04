@@ -1,0 +1,29 @@
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Unscrubbed Make exports
+blueprints/raw/
+
+# Raw test responses (may echo submission data)
+tests/responses/
+
+# Netlify / Node
+.netlify/
+node_modules/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.swp
+
+# Internal working files (kept locally, not published)
+docs/MAIA-PROMPTS.md
+docs/DEMO-SCRIPT.md
+docs/README.md
+web/README.md
+prompts/README.md
+tests/payloads/README.md
+blueprints/README.md
+tests/results.md

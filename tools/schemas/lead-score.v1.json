@@ -1,0 +1,14 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["score", "tier", "intent", "budget_signal", "summary", "next_action", "personalised_opener"],
+  "properties": {
+    "score":               { "type": "integer", "minimum": 0, "maximum": 100 },
+    "tier":                { "type": "string", "enum": ["hot", "warm", "cold", "spam"] },
+    "intent":              { "type": "string", "enum": ["new_project", "redesign", "ongoing_support", "consultation", "partnership", "vendor_pitch", "job_application", "other"] },
+    "budget_signal":       { "type": "string", "enum": ["high", "medium", "low", "unknown"] },
+    "summary":             { "type": "string", "description": "Max 160 characters" },
+    "next_action":         { "type": "string", "description": "Max 140 characters" },
+    "personalised_opener": { "type": "string", "description": "One sentence, max 240 characters, acknowledging the lead's specific need; no URLs, no price promises" }
+  }
+}

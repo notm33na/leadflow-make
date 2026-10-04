@@ -1,0 +1,16 @@
+{
+  "schema_version": "1",
+  "submission_id": "{{SUBMISSION_ID}}",
+  "submitted_at": "2026-10-04T10:00:00Z",
+  "name": "Alex Moreno",
+  "email": "t03-{{RUN_ID}}@example.com",
+  "company": "",
+  "website": "",
+  "service": "branding",
+  "budget": "under_2k",
+  "timeline": "exploring",
+  "message": "Following up on my logo question from earlier.",
+  "consent": true,
+  "fax_number": "",
+  "fill_time_ms": 19870
+}

@@ -1,0 +1,22 @@
+{
+  "schema_version": "1",
+  "submission_id": "{{SUBMISSION_ID}}",
+  "submitted_at": "2026-10-04T10:00:00Z",
+  "name": "Priya Shah",
+  "email": "{{TEST_EMAIL+hot}}",
+  "company": "Kestrel Outdoor Gear",
+  "website": "kestreloutdoor.example",
+  "service": "web_design",
+  "budget": "over_10k",
+  "timeline": "asap",
+  "message": "We're an outdoor-equipment retailer moving off an ageing WooCommerce site before our autumn sale in six weeks. We need a full e-commerce redesign, faster mobile checkout and migration of roughly 600 products with reviews intact. Decision-makers are ready to start now.",
+  "consent": true,
+  "fax_number": "",
+  "fill_time_ms": 64210,
+  "utm": {
+    "source": "google",
+    "medium": "cpc",
+    "campaign": "ecommerce-redesign"
+  },
+  "page_url": "https://leadflow-demo.example/?utm_source=google"
+}

@@ -1,0 +1,16 @@
+{
+  "schema_version": "1",
+  "submission_id": "{{SUBMISSION_ID}}",
+  "submitted_at": "2026-10-04T10:00:00Z",
+  "name": "Lucía Fernández",
+  "email": "{{TEST_EMAIL+es}}",
+  "company": "Tapas Sol Restaurantes",
+  "website": "tapassol.example",
+  "service": "web_design",
+  "budget": "2k_5k",
+  "timeline": "1_3_months",
+  "message": "Dos restaurantes de tapas en Manchester: queremos web nueva con menú y reservas online. La actual no funciona bien en el móvil.",
+  "consent": true,
+  "fax_number": "",
+  "fill_time_ms": 58300
+}
