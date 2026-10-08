@@ -26,8 +26,22 @@ function upstreamMessage() {
 }
 
 function log(event, fields) {
-  // Status codes and submission_id only (§5.7 logging rule).
-  console.log(JSON.stringify({ event, ...fields }));
+  // Status codes, reply kind and submission_id only (§5.7 logging rule). Plain key=value text:
+  // Netlify's log API returned an empty message for JSON-string lines (docs/SMOKE-TEST.md, 2026-10-08).
+  const parts = Object.entries(fields).map(([k, v]) => `${k}=${v}`);
+  const line = `lead-proxy event=${event} ${parts.join(' ')}`;
+  if (fields.status >= 500) console.error(line);
+  else console.log(line);
+}
+
+// Classifies Make's reply without logging it. Platform texts per ARCHITECTURE §4.2.
+function replyKind(text, data) {
+  if (data !== null) return 'json';
+  const t = text.trim();
+  if (!t) return 'empty';
+  if (t === 'Accepted') return 'text_accepted';
+  if (/^queue is full/i.test(t)) return 'text_queue_full';
+  return 'text_other';
 }
 
 // Mirrors the Make R1 bot route: honeypot filled, or a numeric fill time under 3 s.
@@ -103,6 +117,6 @@ export default async function handler(req) {
     log('rejected', { status: 422, upstream: res.status, submission_id: submissionId });
     return json(422, data);
   }
-  log('upstream_unexpected', { status: 502, upstream: res.status, submission_id: submissionId });
+  log('upstream_unexpected', { status: 502, upstream: res.status, reply: replyKind(text, data), submission_id: submissionId });
   return fail(502, 'UPSTREAM_UNAVAILABLE', upstreamMessage());
 }

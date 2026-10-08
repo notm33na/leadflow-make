@@ -15,7 +15,9 @@ globalThis.fetch = async (url, init) => {
   return upstream();
 };
 const realLog = console.log;
-console.log = () => {};
+const realError = console.error;
+let logLines = [];
+console.log = console.error = (line) => { logLines.push(String(line)); };
 
 const good = {
   schema_version: '1', submission_id: '3f1c2a9e-1b2c-4d3e-8f90-123456789abc', name: 'A B', email: 'a@b.example',
@@ -25,13 +27,16 @@ const req = (method, body) => new Request('https://site.example/api/lead', { met
 const makeOk = () => new Response(JSON.stringify({ ok: true, status: 'accepted', submission_id: good.submission_id, message: 'Thanks' }), { status: 200 });
 const results = [];
 
-async function check(name, request, mock, expStatus, expCalls, extra) {
+async function check(name, request, mock, expStatus, expCalls, extra, expLog) {
   upstream = mock;
   calls = 0;
+  logLines = [];
   const res = await handler(request);
   const body = await res.json();
-  const ok = res.status === expStatus && calls === expCalls && (!extra || extra(body));
-  results.push(`${ok ? 'PASS' : 'FAIL'}  ${name}: status ${res.status}, upstream calls ${calls}${ok ? '' : ' body=' + JSON.stringify(body)}`);
+  const line = logLines.join(' | ');
+  const logOk = (!expLog || line.includes(expLog)) && !line.includes(good.email);
+  const ok = res.status === expStatus && calls === expCalls && (!extra || extra(body)) && logOk;
+  results.push(`${ok ? 'PASS' : 'FAIL'}  ${name}: status ${res.status}, upstream calls ${calls}${ok ? '' : ' body=' + JSON.stringify(body) + ' log=' + JSON.stringify(line)}`);
 }
 
 await check('GET rejected', req('GET'), makeOk, 405, 0);
@@ -40,20 +45,22 @@ await check('invalid JSON', req('POST', '{nope'), makeOk, 400, 0);
 await check('array body', req('POST', '[1]'), makeOk, 400, 0);
 await check('honeypot dropped', req('POST', JSON.stringify({ ...good, fax_number: '123' })), makeOk, 200, 0, (b) => b.ok && b.submission_id === good.submission_id);
 await check('too fast dropped', req('POST', JSON.stringify({ ...good, fill_time_ms: 900 })), makeOk, 200, 0);
-await check('valid forwarded', req('POST', JSON.stringify(good)), makeOk, 200, 1, (b) => b.ok === true);
+await check('valid forwarded', req('POST', JSON.stringify(good)), makeOk, 200, 1, (b) => b.ok === true, 'lead-proxy event=accepted status=200 upstream=200 submission_id=' + good.submission_id);
 results.push(`${lastHeaders['x-make-apikey'] === 'mock-secret' && !('x-leadflow-secret' in lastHeaders) ? 'PASS' : 'FAIL'}  secret sent as x-make-apikey (Make webhook API key)`);
 await check('missing fill time forwarded', req('POST', JSON.stringify({ ...good, fill_time_ms: undefined })), makeOk, 200, 1);
 await check('422 passed through', req('POST', JSON.stringify(good)), () => new Response(JSON.stringify({ ok: false, error: { code: 'VALIDATION_FAILED', message: 'Check', fields: ['email'] } }), { status: 422 }), 422, 1, (b) => b.error.fields[0] === 'email');
-await check('plain-text Accepted -> 502', req('POST', JSON.stringify(good)), () => new Response('Accepted', { status: 200 }), 502, 1, (b) => b.error.message.includes('contact@example.com'));
-await check('Make API-key rejection (401 text) -> 502', req('POST', JSON.stringify(good)), () => new Response('Unauthorized', { status: 401 }), 502, 1, (b) => b.error.code === 'UPSTREAM_UNAVAILABLE');
-await check('Make API-key rejection (403 JSON) -> 502', req('POST', JSON.stringify(good)), () => new Response(JSON.stringify({ message: 'Forbidden' }), { status: 403 }), 502, 1);
-await check('Queue is full -> 502', req('POST', JSON.stringify(good)), () => new Response('Queue is full', { status: 400 }), 502, 1);
+await check('plain-text Accepted -> 502', req('POST', JSON.stringify(good)), () => new Response('Accepted', { status: 200 }), 502, 1, (b) => b.error.message.includes('contact@example.com'), 'event=upstream_unexpected status=502 upstream=200 reply=text_accepted');
+await check('Make API-key rejection (401 text) -> 502', req('POST', JSON.stringify(good)), () => new Response('Unauthorized', { status: 401 }), 502, 1, (b) => b.error.code === 'UPSTREAM_UNAVAILABLE', 'upstream=401 reply=text_other');
+await check('Make API-key rejection (403 JSON) -> 502', req('POST', JSON.stringify(good)), () => new Response(JSON.stringify({ message: 'Forbidden' }), { status: 403 }), 502, 1, null, 'upstream=403 reply=json');
+await check('Queue is full -> 502', req('POST', JSON.stringify(good)), () => new Response('Queue is full', { status: 400 }), 502, 1, null, 'upstream=400 reply=text_queue_full');
+await check('410 Gone (empty) -> 502', req('POST', JSON.stringify(good)), () => new Response('', { status: 410 }), 502, 1, null, 'upstream=410 reply=empty');
 await check('timeout -> 504', req('POST', JSON.stringify(good)), () => { const e = new Error('t'); e.name = 'TimeoutError'; throw e; }, 504, 1);
 await check('network error -> 502', req('POST', JSON.stringify(good)), () => { throw new TypeError('fetch failed'); }, 502, 1);
 delete process.env.WEBHOOK_SECRET;
-await check('missing env -> 502', req('POST', JSON.stringify(good)), makeOk, 502, 0);
+await check('missing env -> 502', req('POST', JSON.stringify(good)), makeOk, 502, 0, null, 'event=misconfigured status=502');
 
 console.log = realLog;
+console.error = realError;
 console.log(results.join('\n'));
 const allPass = results.every((r) => r.startsWith('PASS'));
 console.log(allPass ? `\nALL PASS (${results.length})` : '\nFAILURES');
