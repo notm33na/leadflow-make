@@ -1,6 +1,6 @@
 # Live smoke test: LeadFlow demo
 
-**Date:** 2026-10-08 · **Sent at:** 2026-10-08T18:32:21Z · **Result:** ❌ **FAIL** (form check failed; other checks blocked or awaiting a human check)
+**Date:** 2026-10-08 · **Sent at:** 2026-10-08T18:32:21Z · **Result:** ❌ **FAIL** (2 of 4 checks failed, 1 passed, 1 partly passed. Root causes found, fixes specified.)
 
 All data is **synthetic test data**: payload `tests/payloads/01-hot.json` (T-01). No real enquiry was involved.
 
@@ -20,62 +20,52 @@ All data is **synthetic test data**: payload `tests/payloads/01-hot.json` (T-01)
 
 | # | Check | Result | Evidence |
 |---|---|---|---|
-| 1 | Form response: HTTP 200, `ok:true` | ❌ **FAIL** | `HTTP 502` in **2.98 s** (time to first byte 2.96 s). Body: `{"ok":false,"error":{"code":"UPSTREAM_UNAVAILABLE","message":"We couldn't confirm your enquiry was received. Please email us at [contact email]"}}`. Netlify request ID `01M4ECKBNK3X5XS8TG8WJ37ZV3`, served at `Thu, 08 Oct 2026 18:32:24 GMT`. |
-| 2 | AI scoring: tier `hot`, `scoring_method = ai` | ⛔ **BLOCKED** | No Make API token in `.env`, so the execution log can't be read. The Leads sheet row (column U `scoring_method`) wasn't checked. |
-| 3 | Personalised email arrived in the lead's inbox | 🟡 **Needs human check** | `TEST_EMAIL` was used (no disposable inbox), so Claude can't read that inbox. |
-| 4 | Slack owner alert module succeeded | 🟡 **Needs human glance** | Blocked for the same reason as check 2. Check #leadflow-alerts. |
+| 1 | Form response: HTTP 200, `ok:true` | ❌ **FAIL** | `HTTP 502` in **2.98 s** (time to first byte 2.96 s). Body: `{"ok":false,"error":{"code":"UPSTREAM_UNAVAILABLE","message":"We couldn't confirm your enquiry was received. Please email us at [contact email]"}}`. Netlify request ID `01M4ECKBNK3X5XS8TG8WJ37ZV3`. Cause: the scenario was **switched off**, so Make queued the request (finding 1). |
+| 2 | AI scoring: tier `hot`, `scoring_method = ai` | ❌ **FAIL** | Make run log: **M13 HTTP · Gemini score** `+20.0s` → "An error has been caught during operation" (the 20 s timeout), Resume. **M14** parse error caught, Resume. So M15 used the rules fallback: `scoring_method = rules_fallback`, `ai_error = ai_unavailable` (ARCHITECTURE §5.4). The lead was still routed **hot** (M16, M17, M18 ran), but by rules, not AI. Cause: Gemini latency (finding 2). |
+| 3 | Personalised email arrived in the lead's inbox | 🟡 **Sent; opener expected to be the default** | Make run log: **M18 Gmail · personalised reply** "The operation was completed" (+1.0 s). M14 returned no opener, so by the M15 rule the email carries the **default** opener (*"Thanks for sharing the details of your project…"*). Inbox not read by Claude (`TEST_EMAIL`): confirm by hand. |
+| 4 | Slack owner alert module succeeded | ✅ **PASS** | Make run log: **M17 Slack · hot alert** "The operation was completed" (+0.2 s). |
 
-**Credits used:** unknown, between **0 and 12**. It depends on the cause below. Read the actual figure from Make → scenario → **History** (the run at about 18:32:22Z, if there is one).
+**Credits used: 12** (Make run log: Operations 12, Credits 12, Data size 14.8 KB). This is within the ≤ 12 budget and matches the hot-route credit table.
 
-## Diagnosis (no live systems changed)
+**Make run:** `bc66610b246f40c7a0735830da2f8f5c`, trigger *Instant*, duration **23 s**, started 2026-10-08 23:49:09 (Make UI local time, UTC+5 = **18:49:09Z**). This is about 17 min after the send, matching a queued request processed when the scenario was switched back on. The owner supplied the run log. The run is linked to this send by timing and route. Confirm with `Ref: 4b44a2ca-…` in the Slack alert.
 
-The proxy (`web/netlify/functions/lead-proxy.mjs`) returns `502 UPSTREAM_UNAVAILABLE` in three cases:
+## Findings
 
-1. `MAKE_WEBHOOK_URL` or `WEBHOOK_SECRET` is missing in the function environment. **Unlikely.** That branch makes no network call, so it would answer in milliseconds, not 2.96 s. Both variables exist on the Netlify project but are stored as secret values (the CLI lists them as empty), so their values couldn't be confirmed.
-2. A network error reaching Make. **Unlikely.** A connection failure would normally fail fast, and a timeout would return `504` after 30 s.
-3. **Make answered, but not with `200` + JSON `ok:true` (or `422` + JSON). Most likely.**
+### 1. The scenario was off when the lead arrived → form showed an error (check 1)
 
-The **timing** is the main clue. When things work, M04 replies early, in 0.9–1.5 s, and a full hot run takes about 3 s (ARCHITECTURE §3, DECISIONS #50). A 2.96 s answer fits Make replying **at the end of a run**. ARCHITECTURE §4.2 documents this: Make sends a plain-text `200 Accepted` when no Webhook response module was reached, or when the request was only queued.
+- The proxy took 2.96 s and returned 502, so Make had answered without the JSON `ok:true` body.
+- The only Make run for this lead started about **17 min later**. Its three Webhook response modules (M03, M04, M07) logged: *"Response can't be processed when scenario is not executed immediately on data arrival."*
+- So Make **queued** the request while the scenario was inactive, replied to the proxy with its default plain-text `Accepted` (DECISIONS #18), and processed the lead once the scenario was active again. M04's real reply had nowhere to go. Recorded as **DECISIONS #58**.
+- The proxy worked as designed. A visitor saw the fallback message with the contact email, and the lead was **not lost**, only late.
+- **Why was it off?** Not known yet. Make switches off an instantly triggered scenario after an **unhandled error** (DECISIONS #6). Error routes that end without a directive are an open 🧪 item (DECISIONS #56). **Owner action:** in History, find the last run **before** 18:32Z with status *Error*, and note the failing module.
 
-Possible causes, most likely first:
+### 2. Gemini now takes about 17 s, against a 20 s M13 timeout → rules fallback (checks 2 and 3)
 
-| Hypothesis | What you would see in Make | Was the lead processed? | Proposed fix (owner applies) |
+- In Make, M13 hit exactly its 20 s timeout.
+- Local 0-credit calls with the same prompt and model (`node tools/gemini-smoke-test.mjs tests/payloads/01-hot.json`), three in a row: **16.9 s PASS** (AI score 90, hot), **1 FAIL** (reason not captured; consistent with the timeout), **17.3 s PASS** (`latency=17323ms`).
+- Build step 8 measured about 3 s for the **whole** hot run, so Gemini latency has drifted up to the limit.
+- The prompt already uses `thinkingLevel: low`, the lowest the model accepts (DECISIONS #25), so the lever is the timeout. Recorded as **DECISIONS #57**.
+
+### 3. Proxy logs were unreadable (secondary)
+
+The invocation was logged at 18:32:22.760Z with an **empty message** in Netlify's log API. The JSON-string log line was lost, and it would have shown `upstream_unexpected upstream=200` straight away.
+
+## Fixes
+
+| # | Fix | Where | Status |
 |---|---|---|---|
-| **A. M04 isn't replying.** M04 was disconnected or moved after a slow module, or it errored and its Resume handler swallowed the error. | A run at about 18:32:22Z in History. M04 shows an error, or the run has no M04 bundle. | **Probably yes**: Sheets row, Slack alert and email should all exist. | Reconnect M04 directly after R1 route 2, before M10/M13, with status `200` and the §4.2 body. Compare the live scenario against ARCHITECTURE §5 and re-export the blueprint. |
-| **B. Scenario is OFF, or the organisation is paused for running out of credits** (Make Free: 1,000/month) | No run in History. The webhook queue shows 1 item. Credits are at or near 0. | **No, not yet.** ⚠️ The queued request **will run when the scenario is switched back on**. That spends about 12 credits and sends one email to the `TEST_EMAIL` sub-address. | Delete the queued item if you don't want it to run, then switch the scenario on (or wait for the credit reset). |
-| **C. The webhook API key was rotated.** Make returns `401` because Netlify `WEBHOOK_SECRET` no longer matches. | No run in History. 0 credits used (DECISIONS #47). | No | Set Netlify `WEBHOOK_SECRET` to the current key on the Make webhook, then redeploy. |
+| 1 | Switch the scenario **ON**, after finding and fixing the error that switched it off (finding 1). Before every live test, check: scenario ON, webhook queue empty, credits left. | Make UI (owner) | ⏳ Owner. The scenario has been on since about 18:49Z, judging by the run. |
+| 2 | **M13 Timeout: 20 → 45 s.** Credits are unchanged. The form isn't affected, because M04 replies before M13 (#50). The worst-case run is about 1 min, far below Make Free's 5-min limit. | Make: M13 → *Timeout* = `45` (owner). Spec updated in the repo: ARCHITECTURE §5 M13 row, §7.2, §8; DECISIONS #30, #54, #57; `tools/gemini-smoke-test.mjs` mirrors 45 s. | ✅ Spec · ⏳ Make |
+| 3 | Proxy logs: plain `key=value` text, plus `reply` = `json` / `text_accepted` / `text_queue_full` / `text_other` / `empty` on unexpected Make replies. Never bodies. `node tools/test-proxy.mjs`: **ALL PASS (18)**, including log-line and no-email assertions. ARCHITECTURE §5.7 updated. | `web/netlify/functions/lead-proxy.mjs` (commit `fe5b69c`) | ✅ Repo · ⏳ Deploy (`cd web && npx netlify-cli deploy --prod`; the auto-mode safety check blocked Claude from deploying to production) |
+| 4 | Re-test: one T-01 through the proxy (about 12 credits) after fixes 1 and 2. Expect 200 `ok:true` in under 2 s, `scoring_method = ai`, a non-default opener, and M17 OK. Record the M13 duration against DECISIONS #57. | — | ⏳ Needs approval |
 
-**Secondary finding: proxy logs are unreadable.** The function invocation was logged at 2026-10-08T18:32:22.760Z, but its message is **empty** in Netlify's log API (`netlify logs --json`). The proxy's `event` / `upstream` status line (`upstream_unexpected`, `upstream: <code>`) was lost, and that would have identified the cause straight away. Proposed fix: confirm in the Netlify UI (Logs → Functions) whether the line appears there. If it doesn't, also log a plain string, e.g. `console.log(\`lead-proxy ${event} status=${status} upstream=${upstream}\`)`. Then verify with `node tools/test-proxy.mjs` and redeploy.
+## Make API token (optional, for reading runs without the UI)
 
-## Unblocking checks 2 and 4: Make API token
+Make's API reads execution logs and details with only the **`scenarios:read`** scope ([scenario logs API](https://developers.make.com/api-documentation/api-reference/scenarios/logs)), at 0 credits: `GET /scenarios/{scenarioId}/logs`, `GET /scenarios/{scenarioId}/executions/{executionId}`, `GET /scenarios/{scenarioId}/modules/{moduleId}/logs`.
 
-Make's API exposes execution logs and details. Reading them needs only the **`scenarios:read`** scope ([scenario logs API](https://developers.make.com/api-documentation/api-reference/scenarios/logs)). Endpoints: `GET /scenarios/{scenarioId}/logs`, `GET /scenarios/{scenarioId}/executions/{executionId}` (status and error, including the failing module), and `GET /scenarios/{scenarioId}/modules/{moduleId}/logs` (per-module status, for example `M17 Slack · hot alert`). These calls use **0 credits**.
+To create one ([official steps](https://developers.make.com/api-documentation/authentication/create-authentication-token)): avatar (bottom left) → **Profile** → **API** tab → **Add token**. Label it `leadflow-smoke-readonly`, tick **only `scenarios:read`**, save, and copy the token right away. Put it in `.env` as `MAKE_API_TOKEN`, with `MAKE_ZONE` (for example `eu1.make.com`) and `MAKE_SCENARIO_ID`.
 
-To create a token ([official steps](https://developers.make.com/api-documentation/authentication/create-authentication-token)):
-
-1. In Make, click your avatar (bottom left) → **Profile** → **API** tab → **Add token**.
-2. Label it, e.g. `leadflow-smoke-readonly`, and tick **only `scenarios:read`**.
-3. Save, and copy the token right away (it's partly hidden afterwards).
-4. Add it to `.env` (gitignored) as `MAKE_API_TOKEN=…`. Also add `MAKE_ZONE=` (for example `eu1.make.com`, the host in your Make URL) and `MAKE_SCENARIO_ID=` (the number in the scenario's URL). Add placeholders for the same three to `.env.example`.
-
-**Free-plan note:** Make's developer docs list API rate limits by plan starting at Core (60 requests/min) and say nothing about the Free plan ([rate limiting](https://developers.make.com/api-documentation/getting-started/rate-limiting)). Whether a Free organisation can use these endpoints is **unconfirmed** (🧪). Fallback: read the same information in the Make UI (scenario → History → the run → module bubbles).
-
-## Human checks needed now (0 credits)
-
-1. **Make → scenario → History:** is there a run at about 18:32:22Z? Note its status, credits used, and the status of M04, M13 (Gemini), M17 (Slack hot alert) and M18 (Gmail). Also check the scenario's ON toggle, the webhook queue and the credits left.
-2. **`TEST_EMAIL` inbox:** look for a message to the `+hot-smk10081832` sub-address with subject *"Your Web design project with Media & Software Manager: next steps"*. Check that the second paragraph is **not** the default opener *"Thanks for sharing the details of your project. It sounds like a great fit for the work we do."*
-3. **Slack #leadflow-alerts:** look for a hot-lead alert with `Ref: 4b44a2ca-9c2d-4ab5-9c30-92a35cb582db`.
-4. **Leads sheet:** look for a row with that `submission_id`, with tier `hot` and `scoring_method` `ai`.
-
-Even if all four pass (hypothesis A), check 1 stays **FAIL**: a real visitor would have seen an error message for a lead that was actually captured.
-
-## Fix status
-
-| Item | Status |
-|---|---|
-| Proxy logging (secondary finding) | ✅ **Fixed in repo, not yet deployed.** `lead-proxy.mjs` now logs plain `key=value` text, with a `reply` kind on unexpected Make replies: `text_accepted` points to A or B, `text_other` with `upstream=401` points to C, `text_queue_full` / `empty` (410) are platform states. `node tools/test-proxy.mjs`: **ALL PASS (18)**, including assertions on the log line and that no email address is logged. ARCHITECTURE §5.7 updated. |
-| Root cause (A / B / C) | ⏳ **Open.** Needs the human checks above, or a Make API token. Then apply the matching fix from the table. |
-| Re-test | ⏳ After the fix: one T-01 send through the proxy (about 12 credits), with approval. |
+Make's docs list API rate limits from Core (60/min) upwards and say nothing about Free ([rate limiting](https://developers.make.com/api-documentation/getting-started/rate-limiting)), so Free-plan API access is **unconfirmed** (🧪). Fallback: Make UI → History → the run, as used for this report.
 
 ## Note for IT
 

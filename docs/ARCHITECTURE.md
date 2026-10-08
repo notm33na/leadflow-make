@@ -415,7 +415,7 @@ One spreadsheet, `LeadFlow – Media & Software Manager (synthetic)`, with three
 | **R3** | Router "Pre-screen" | Skip AI for obvious spam | Route 1 filter: `M10.hard_spam` **Boolean › Equal to** `true`. Route 2 = **fallback**. | — | 0 |
 | **M11** | Google Sheets › Add a Row | Spam (rules) | Sheet `Spam`; reason `hard_spam_rules`; score `M10.rules_score`; summary `M10.hard_spam_reason`; other columns per §4.4. | **E03a → Retry** | 1 |
 | **M12** | JSON › Create JSON | Build the **whole** Gemini request body with safe escaping | Data structure `GeminiRequest`, created with the data-structure **Generator** from the sample body in §4.3 (including the output schema). Paste the system prompt text from `prompts/lead-scoring.md` as plain text into `systemInstruction.parts[1].text`; Create JSON escapes it. `contents[1].role` = `user`; `contents[1].parts[1].text` = rendered user turn (§4.3); generationConfig values exactly as §4.3. | Resume (empty) → M13 sends an empty body, gets a 400, and the rules fallback applies | 1 |
-| **M13** | HTTP › Make a request | Gemini scoring | Method POST; URL per §4.3 with the `GEMINI_MODEL` value; Authentication **API key** (keychain, header `x-goog-api-key`); body content type **application/JSON**, request content `{{M12.json}}` (#38); **Parse response = Yes**; **Timeout = 20 s**; **Return error if HTTP request fails = No**, so 4xx/5xx come back with their status code (#30). | **Resume** (empty): only reached on timeout or network error (#31) | 1 |
+| **M13** | HTTP › Make a request | Gemini scoring | Method POST; URL per §4.3 with the `GEMINI_MODEL` value; Authentication **API key** (keychain, header `x-goog-api-key`); body content type **application/JSON**, request content `{{M12.json}}` (#38); **Parse response = Yes**; **Timeout = 45 s** (raised from 20 s after the 2026-10-08 smoke test: Gemini latency about 17 s, one timeout; #57); **Return error if HTTP request fails = No**, so 4xx/5xx come back with their status code (#30). | **Resume** (empty): only reached on timeout or network error (#31) | 1 |
 | **M14** | JSON › Parse JSON | Parse model output | JSON string = `M13.data.candidates[1].content.parts[1].text`; data structure `LeadScore` (§5.5). | **Resume** (all fields empty) | 1 |
 | **M15** | Tools › Set multiple variables | Decide final values (field-level fallback) | Variables in §5.4. | Resume (empty) → R4 cold fallback | 1 |
 | **R4** | Router "Tier" | Route by outcome | spam: `M15.is_ai_spam` Boolean = `true`. hot: `is_ai_spam` = `false` AND `M15.final_score` Numeric ≥ 70. warm: `is_ai_spam` = `false` AND `final_score` ≥ 40 AND `final_score` < 70. **cold = fallback route**, so a lead with no usable score is still stored (FR-9 AC4). | — | 0 |
@@ -655,7 +655,7 @@ Routers and error handlers cost 0 (#3). Every module run counts 1 (#4). Measured
 | Yes | Yes | Replay: no-op (the caller already got 200) |
 
 **Accepted limitations** (demo volume, PRD R8):
-1. **Concurrent sends.** Sequential processing is off (#8). Two submissions from the same email that arrive within the M05→append window, which includes the Gemini call of up to 20 s, can both be treated as new: two rows, two emails, two alerts.
+1. **Concurrent sends.** Sequential processing is off (#8). Two submissions from the same email that arrive within the M05→append window, which includes the Gemini call of up to 45 s, can both be treated as new: two rows, two emails, two alerts.
 2. **Replay during a pending retry.** If an append failed and is waiting in incomplete executions, a replay arriving meanwhile is treated as new. The later retry then adds a second row.
 3. **Older-id replay.** Only the last id is stored. Replaying an earlier id (A after B) counts as a new submission and increments the count.
 4. **Spam isn't deduplicated.** The Spam tab is append-only, so a spam replay costs another Gemini call (AI spam) or 6 credits (hard spam).
@@ -681,7 +681,7 @@ Routers and error handlers cost 0 (#3). Every module run counts 1 (#4). Measured
 
 | Service | Relevant limit | How the design respects it |
 |---|---|---|
-| Make Free (#1–#4) | 1,000 credits/month; 2 active scenarios; 5-minute max execution; 7-day log retention | ≤ 12 credits per lead; one scenario; Gemini timeout of 20 s keeps the worst case well under 1 minute; bots blocked before Make |
+| Make Free (#1–#4) | 1,000 credits/month; 2 active scenarios; 5-minute max execution; 7-day log retention | ≤ 12 credits per lead; one scenario; Gemini timeout of 45 s keeps the worst case at about 1 minute, far below the 5-minute limit; bots blocked before Make |
 | Make webhooks (#18) | 300 requests per 10 s; queue size scales with licensed credits; 180 s response timeout | Reply sent around M04, before the run ends (#50): 0.9–1.5 s measured; demo volume far below the limits |
 | Gemini free tier (#24–#28) | Per-model RPM/TPM/RPD shown in AI Studio; RPD resets at midnight Pacific; free-tier content may be used to improve Google products | One request per scored lead and no retries; synthetic data only; rules fallback on 429 |
 | Google Sheets API (#33) | 60 read and 60 write requests per minute per user; 300 per project | ≤ 2 Sheets calls per lead |

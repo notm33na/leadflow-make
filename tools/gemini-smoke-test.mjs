@@ -222,7 +222,7 @@ function buildRequestBody(systemPrompt, userTurn, legacy) {
 }
 
 async function callGemini({ apiKey, model, body }) {
-  // Mirrors M13: 20 s timeout, non-2xx returned (not thrown) with its status code.
+  // Mirrors M13: 45 s timeout, non-2xx returned (not thrown) with its status code.
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`;
   const started = Date.now();
   try {
@@ -230,7 +230,7 @@ async function callGemini({ apiKey, model, body }) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
       body: JSON.stringify(body),
-      signal: AbortSignal.timeout(20_000),
+      signal: AbortSignal.timeout(45_000),
     });
     const text = await res.text();
     let data = null;
