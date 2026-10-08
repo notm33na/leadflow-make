@@ -48,7 +48,7 @@ All data is **synthetic test data**: payload `tests/payloads/01-hot.json` (T-01)
 
 ### 3. Proxy logs were unreadable (secondary)
 
-The invocation was logged at 18:32:22.760Z with an **empty message** in Netlify's log API. The JSON-string log line was lost, and it would have shown `upstream_unexpected upstream=200` straight away.
+The invocation was logged at 18:32:22.760Z with an **empty message** in Netlify's **historical** log API (`netlify logs --since`). After the redeploy, the same API still returned empty messages for every line, but the **live stream** (`netlify logs --follow`) showed the full line. The history API is the limitation, not the log format. For future live tests, start `netlify logs --source functions --function lead-proxy --follow` **before** the send, or use the Netlify UI. Either would have shown `upstream_unexpected upstream=200 reply=text_accepted` straight away.
 
 ## Fixes
 
@@ -56,7 +56,7 @@ The invocation was logged at 18:32:22.760Z with an **empty message** in Netlify'
 |---|---|---|---|
 | 1 | Keep the scenario **ON** for live tests. It was switched off by hand, not by an error (finding 1). Before every live test, check: scenario ON, webhook queue empty, credits left. | Make UI (owner) | ✅ The scenario has been on since about 18:49Z, judging by the run. |
 | 2 | **M13 Timeout: 20 → 45 s.** Credits are unchanged. The form isn't affected, because M04 replies before M13 (#50). The worst-case run is about 1 min, far below Make Free's 5-min limit. | Make: M13 → *Timeout* = `45` (owner). Spec updated in the repo: ARCHITECTURE §5 M13 row, §7.2, §8; DECISIONS #30, #54, #57; `tools/gemini-smoke-test.mjs` mirrors 45 s. | ✅ Spec · ⏳ Make |
-| 3 | Proxy logs: plain `key=value` text, plus `reply` = `json` / `text_accepted` / `text_queue_full` / `text_other` / `empty` on unexpected Make replies. Never bodies. `node tools/test-proxy.mjs`: **ALL PASS (18)**, including log-line and no-email assertions. ARCHITECTURE §5.7 updated. | `web/netlify/functions/lead-proxy.mjs` (commit `fe5b69c`) | ✅ Repo · ⏳ Deploy (`cd web && npx netlify-cli deploy --prod`; the auto-mode safety check blocked Claude from deploying to production) |
+| 3 | Proxy logs: plain `key=value` text, plus `reply` = `json` / `text_accepted` / `text_queue_full` / `text_other` / `empty` on unexpected Make replies. Never bodies. `node tools/test-proxy.mjs`: **ALL PASS (18)**, including log-line and no-email assertions. ARCHITECTURE §5.7 updated. | `web/netlify/functions/lead-proxy.mjs` (commit `fe5b69c`) | ✅ **Deployed** 2026-10-08T18:58Z (deploy `6ac7e7b7b3f60cb640864ca9`). Verified with two 0-credit honeypot requests (bot drop, Make not called): `POST` → 200 `ok:true`, `GET` → 405, and the live log stream showed `lead-proxy event=bot_dropped status=200 submission_id=e2e049f7-…`. |
 | 4 | Re-test: one T-01 through the proxy (about 12 credits) after fixes 1 and 2. Expect 200 `ok:true` in under 2 s, `scoring_method = ai`, a non-default opener, and M17 OK. Record the M13 duration against DECISIONS #57. | — | ⏳ Needs approval |
 
 ## Make API token (optional, for reading runs without the UI)
