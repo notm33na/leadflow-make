@@ -26,8 +26,8 @@ function upstreamMessage() {
 }
 
 function log(event, fields) {
-  // Status codes, reply kind and submission_id only (§5.7 logging rule). Plain key=value text:
-  // Netlify's log API returned an empty message for JSON-string lines (docs/SMOKE-TEST.md, 2026-10-08).
+  // Status codes, reply kind and submission_id only (§5.7 logging rule). Plain key=value text,
+  // readable in the Netlify UI and `netlify logs --follow` (the historical log API returns empty messages).
   const parts = Object.entries(fields).map(([k, v]) => `${k}=${v}`);
   const line = `lead-proxy event=${event} ${parts.join(' ')}`;
   if (fields.status >= 500) console.error(line);
