@@ -1,6 +1,6 @@
 # Live smoke test: LeadFlow demo
 
-**Date:** 2026-10-08 · **Sent at:** 2026-10-08T18:32:21Z · **Result:** ❌ **FAIL** (2 of 4 checks failed, 1 passed, 1 partly passed. Root causes found, fixes specified.)
+**Date:** 2026-10-08 · **Sent at:** 2026-10-08T18:32:21Z · **Result:** ❌ **FAIL** (2 of 4 checks failed, 1 passed, 1 partly passed. Root causes: the scenario was switched off by hand, and the Gemini latency is at the M13 timeout. Fixes specified.)
 
 All data is **synthetic test data**: payload `tests/payloads/01-hot.json` (T-01). No real enquiry was involved.
 
@@ -37,7 +37,7 @@ All data is **synthetic test data**: payload `tests/payloads/01-hot.json` (T-01)
 - The only Make run for this lead started about **17 min later**. Its three Webhook response modules (M03, M04, M07) logged: *"Response can't be processed when scenario is not executed immediately on data arrival."*
 - So Make **queued** the request while the scenario was inactive, replied to the proxy with its default plain-text `Accepted` (DECISIONS #18), and processed the lead once the scenario was active again. M04's real reply had nowhere to go. Recorded as **DECISIONS #58**.
 - The proxy worked as designed. A visitor saw the fallback message with the contact email, and the lead was **not lost**, only late.
-- **Why was it off?** Not known yet. Make switches off an instantly triggered scenario after an **unhandled error** (DECISIONS #6). Error routes that end without a directive are an open 🧪 item (DECISIONS #56). **Owner action:** in History, find the last run **before** 18:32Z with status *Error*, and note the failing module.
+- **Why was it off?** The owner had **switched it off by hand** (confirmed 2026-10-08). There was no error, so no scenario fix is needed. The lesson is procedural: the pre-test checklist now starts with "scenario ON, webhook queue empty".
 
 ### 2. Gemini now takes about 17 s, against a 20 s M13 timeout → rules fallback (checks 2 and 3)
 
@@ -54,7 +54,7 @@ The invocation was logged at 18:32:22.760Z with an **empty message** in Netlify'
 
 | # | Fix | Where | Status |
 |---|---|---|---|
-| 1 | Switch the scenario **ON**, after finding and fixing the error that switched it off (finding 1). Before every live test, check: scenario ON, webhook queue empty, credits left. | Make UI (owner) | ⏳ Owner. The scenario has been on since about 18:49Z, judging by the run. |
+| 1 | Keep the scenario **ON** for live tests. It was switched off by hand, not by an error (finding 1). Before every live test, check: scenario ON, webhook queue empty, credits left. | Make UI (owner) | ✅ The scenario has been on since about 18:49Z, judging by the run. |
 | 2 | **M13 Timeout: 20 → 45 s.** Credits are unchanged. The form isn't affected, because M04 replies before M13 (#50). The worst-case run is about 1 min, far below Make Free's 5-min limit. | Make: M13 → *Timeout* = `45` (owner). Spec updated in the repo: ARCHITECTURE §5 M13 row, §7.2, §8; DECISIONS #30, #54, #57; `tools/gemini-smoke-test.mjs` mirrors 45 s. | ✅ Spec · ⏳ Make |
 | 3 | Proxy logs: plain `key=value` text, plus `reply` = `json` / `text_accepted` / `text_queue_full` / `text_other` / `empty` on unexpected Make replies. Never bodies. `node tools/test-proxy.mjs`: **ALL PASS (18)**, including log-line and no-email assertions. ARCHITECTURE §5.7 updated. | `web/netlify/functions/lead-proxy.mjs` (commit `fe5b69c`) | ✅ Repo · ⏳ Deploy (`cd web && npx netlify-cli deploy --prod`; the auto-mode safety check blocked Claude from deploying to production) |
 | 4 | Re-test: one T-01 through the proxy (about 12 credits) after fixes 1 and 2. Expect 200 `ok:true` in under 2 s, `scoring_method = ai`, a non-default opener, and M17 OK. Record the M13 duration against DECISIONS #57. | — | ⏳ Needs approval |
