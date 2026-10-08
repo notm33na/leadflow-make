@@ -69,6 +69,14 @@ To create a token ([official steps](https://developers.make.com/api-documentatio
 
 Even if all four pass (hypothesis A), check 1 stays **FAIL**: a real visitor would have seen an error message for a lead that was actually captured.
 
+## Fix status
+
+| Item | Status |
+|---|---|
+| Proxy logging (secondary finding) | ✅ **Fixed in repo, not yet deployed.** `lead-proxy.mjs` now logs plain `key=value` text, with a `reply` kind on unexpected Make replies: `text_accepted` points to A or B, `text_other` with `upstream=401` points to C, `text_queue_full` / `empty` (410) are platform states. `node tools/test-proxy.mjs`: **ALL PASS (18)**, including assertions on the log line and that no email address is logged. ARCHITECTURE §5.7 updated. |
+| Root cause (A / B / C) | ⏳ **Open.** Needs the human checks above, or a Make API token. Then apply the matching fix from the table. |
+| Re-test | ⏳ After the fix: one T-01 send through the proxy (about 12 credits), with approval. |
+
 ## Note for IT
 
 By design, the **owner** is alerted on **Slack** (#leadflow-alerts), and the **email goes to the lead** (the personalised reply, M18 on the hot route). There is **no separate notification email to the freelancer/owner**. Its absence is expected, not a fault.
