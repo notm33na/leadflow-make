@@ -1,8 +1,31 @@
 # Live smoke test: LeadFlow demo
 
-**Date:** 2026-10-08 · **Sent at:** 2026-10-08T18:32:21Z · **Result:** ❌ **FAIL** (2 of 4 checks failed, 1 passed, 1 partly passed. Root causes: the scenario was switched off by hand, and the Gemini latency is at the M13 timeout. Fixes specified.)
+**Date:** 2026-10-08 · **First send:** 18:32:21Z → ❌ FAIL · **Re-test:** 19:05:27Z → ✅ **PASS (4/4)** after two fixes (scenario switched back on; M13 timeout 20 → 45 s). Results of the first send are kept below for the record.
 
 All data is **synthetic test data**: payload `tests/payloads/01-hot.json` (T-01). No real enquiry was involved.
+
+## Re-test (2026-10-08T19:05:27Z): ✅ PASS
+
+Same method as the first send: T-01 hot payload through `POST https://m-and-s-leadflow-demo.netlify.app/api/lead`, 1 send, no retries. `submission_id` `0823517d-d2c8-4977-8327-b49af799cd9d`, email tag `hot-smk10081905` (`TEST_EMAIL`, address not recorded). Fixes in place: scenario ON, M13 timeout 45 s, proxy logging deploy `6ac7e7b7b3f60cb640864ca9`.
+
+| # | Check | Result | Evidence |
+|---|---|---|---|
+| 1 | Form response: HTTP 200, `ok:true` | ✅ **PASS** | `HTTP 200` in **2.80 s** as measured from the test machine. Body: `{"ok":true,"status":"accepted","submission_id":"0823517d-…","message":"Thanks! We've received your enquiry and will be in touch shortly."}`. Netlify request ID `01M4EEFYZ4RTT52ZNWHM65C0KG`. Live proxy log: `lead-proxy event=accepted status=200 upstream=200 submission_id=0823517d-…`, function duration **0.82 s**, so M04 replied early, as designed (#50). The other ~2 s was Netlify's edge and the network from the test machine. |
+| 2 | AI scoring: tier `hot`, `scoring_method = ai` | ✅ **PASS** | Make run log: **M13 HTTP · Gemini score** `+11.4s` "The operation was completed" (no error caught; inside the 45 s timeout). **M14** parse completed. Hot route M16 → M17 → M18 ran. Leads sheet row confirmed by the owner: `scoring_method = ai`, tier `hot`. |
+| 3 | Personalised email arrived in the lead's inbox | ✅ **PASS** | Make run log: **M18 Gmail · personalised reply** completed (+0.9 s). The owner confirmed the email arrived in the `TEST_EMAIL` inbox with the hot-route subject and an AI-written, **non-default** opener. |
+| 4 | Slack owner alert module succeeded | ✅ **PASS** | Make run log: **M17 Slack · hot alert** "The operation was completed" (+0.2 s). |
+
+**Credits used: 12** (Make run log: Operations 12, Credits 12, Data size 16.9 KB). This is within the ≤ 12 budget and matches the hot-route credit table (ARCHITECTURE §6).
+
+**Make run:** `f5d6629d07c84749b2bd45c2b8e891dd`, trigger *Instant*, duration **14 s**, started 00:05:29 Make UI local time (UTC+5) = **19:05:29Z**, two seconds after the send, so it ran straight away (no queueing). The owner supplied the run log.
+
+**Gemini latency (DECISIONS #57):** M13 took 11.4 s live, against earlier samples of 16.9 s, 17.3 s and one timeout. The 45 s timeout leaves about 4× headroom over this sample.
+
+**Total credits for this smoke test:** 24 (12 for the first send, processed late from the queue, plus 12 for the re-test). The two honeypot POSTs and the GET checks after the deploy used 0, because the proxy handles them without calling Make.
+
+---
+
+## First send (2026-10-08T18:32:21Z): ❌ FAIL
 
 ## What was sent
 
@@ -55,9 +78,9 @@ The invocation was logged at 18:32:22.760Z with an **empty message** in Netlify'
 | # | Fix | Where | Status |
 |---|---|---|---|
 | 1 | Keep the scenario **ON** for live tests. It was switched off by hand, not by an error (finding 1). Before every live test, check: scenario ON, webhook queue empty, credits left. | Make UI (owner) | ✅ The scenario has been on since about 18:49Z, judging by the run. |
-| 2 | **M13 Timeout: 20 → 45 s.** Credits are unchanged. The form isn't affected, because M04 replies before M13 (#50). The worst-case run is about 1 min, far below Make Free's 5-min limit. | Make: M13 → *Timeout* = `45` (owner). Spec updated in the repo: ARCHITECTURE §5 M13 row, §7.2, §8; DECISIONS #30, #54, #57; `tools/gemini-smoke-test.mjs` mirrors 45 s. | ✅ Spec · ⏳ Make |
+| 2 | **M13 Timeout: 20 → 45 s.** Credits are unchanged. The form isn't affected, because M04 replies before M13 (#50). The worst-case run is about 1 min, far below Make Free's 5-min limit. | Make: M13 → *Timeout* = `45` (owner). Spec updated in the repo: ARCHITECTURE §5 M13 row, §7.2, §8; DECISIONS #30, #54, #57; `tools/gemini-smoke-test.mjs` mirrors 45 s. | ✅ Spec · ✅ Make (applied by the owner via Maia, then verified by the re-test: M13 +11.4 s, no error) |
 | 3 | Proxy logs: plain `key=value` text, plus `reply` = `json` / `text_accepted` / `text_queue_full` / `text_other` / `empty` on unexpected Make replies. Never bodies. `node tools/test-proxy.mjs`: **ALL PASS (18)**, including log-line and no-email assertions. ARCHITECTURE §5.7 updated. | `web/netlify/functions/lead-proxy.mjs` (commit `fe5b69c`) | ✅ **Deployed** 2026-10-08T18:58Z (deploy `6ac7e7b7b3f60cb640864ca9`). Verified with two 0-credit honeypot requests (bot drop, Make not called): `POST` → 200 `ok:true`, `GET` → 405, and the live log stream showed `lead-proxy event=bot_dropped status=200 submission_id=e2e049f7-…`. |
-| 4 | Re-test: one T-01 through the proxy (about 12 credits) after fixes 1 and 2. Expect 200 `ok:true` in under 2 s, `scoring_method = ai`, a non-default opener, and M17 OK. Record the M13 duration against DECISIONS #57. | — | ⏳ Needs approval |
+| 4 | Re-test: one T-01 through the proxy (about 12 credits) after fixes 1 and 2. Expect 200 `ok:true` in under 2 s, `scoring_method = ai`, a non-default opener, and M17 OK. Record the M13 duration against DECISIONS #57. | — | ✅ **Done 19:05:27Z: PASS 4/4** (see the top of this report) |
 
 ## Make API token (optional, for reading runs without the UI)
 
