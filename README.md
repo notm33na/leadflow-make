@@ -10,8 +10,8 @@ Every enquiry gets an on-page reply in about **1 second**. Gemini scores it, hot
 |---|---|
 | 🎥 Demo video | [docs/demo-video.mp4](docs/demo-video.mp4) |
 | 🌐 Live demo form | https://m-and-s-leadflow-demo.netlify.app/ |
-| 📄 Case study | [docs/CASE-STUDY.md](docs/CASE-STUDY.md) · [on the M&S Manager site](https://media-and-software-manager.vercel.app/automation.html#work) |
-| 🏢 Built by | [M&S Manager: Zapier, Make and HubSpot automation for SaaS](https://media-and-software-manager.vercel.app/automation.html#work) |
+| 📄 Case study | [docs/CASE-STUDY.md](docs/CASE-STUDY.md) · [on the M&S Manager site](https://www.mediaandsoftwaremanager.com/automation#work) |
+| 🏢 Built by | [M&S Manager: Zapier, Make and HubSpot automation for SaaS](https://www.mediaandsoftwaremanager.com/automation#work) |
 | 🖼️ Screenshots | [scenario](docs/screenshots/make-scenario.png) · [Slack alerts](docs/screenshots/slack-hot-alerts.png) · [landing page](docs/screenshots/landing-page-dark.png) |
 | 🧩 Build spec | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) · [docs/PRD.md](docs/PRD.md) · [docs/DECISIONS.md](docs/DECISIONS.md) |
 
