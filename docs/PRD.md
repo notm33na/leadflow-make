@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Product** | LeadFlow: AI-powered lead capture, qualification and routing |
-| **Company** | Media & Software Manager, the author's own company (web design, SEO, paid advertising, branding). LeadFlow runs on a **demo** form with synthetic data (§1.1) |
+| **Company** | Media & Software Manger, the author's own company (web design, SEO, paid advertising, branding). LeadFlow runs on a **demo** form with synthetic data (§1.1) |
 | **Platform** | Make.com (Free plan), Google Sheets, Gemini API, Slack, Gmail, Netlify |
 | **Version** | 1.1 |
 | **Date** | 2026-10-04 |
@@ -14,7 +14,7 @@
 
 ## 1. Problem statement
 
-> **Context.** LeadFlow is built and demonstrated by **Media & Software Manager**, the author's own company. The landing page is a live **demo**: every submission shown in tests, screenshots and the demo video is synthetic. No customer data and no business outcomes are claimed (§1.1).
+> **Context.** LeadFlow is built and demonstrated by **Media & Software Manger**, the author's own company. The landing page is a live **demo**: every submission shown in tests, screenshots and the demo video is synthetic. No customer data and no business outcomes are claimed (§1.1).
 
 Small service businesses that sell website builds, SEO, paid advertising and branding typically receive enquiries through a website form that lands in a shared inbox. The typical problems:
 - A reply depends on someone noticing the email, so enquiries sent late on a Friday can wait until Monday.
@@ -24,7 +24,7 @@ Small service businesses that sell website builds, SEO, paid advertising and bra
 Published research on online lead response, notably Oldroyd, McElheran and Elkington's *"The Short Life of Online Sales Leads"* (Harvard Business Review, March 2011), found that companies which contact web leads quickly are far more likely to qualify them than companies that wait hours (see DECISIONS #35). LeadFlow's goal: **every genuine enquiry acknowledged within seconds, high-value enquiries in front of the owner immediately, and spam out of the way**, without new SaaS spend.
 
 ### 1.1 Presentation rule (honesty)
-Media & Software Manager is the author's own company and may be named and shown, logo included. The LeadFlow form is a **demo**:
+Media & Software Manger is the author's own company and may be named and shown, logo included. The LeadFlow form is a **demo**:
 - Every public-facing artifact (README, case study, screenshots and captions, demo video, the Make Partner Directory application) must state that the submissions shown are **synthetic test data**.
 - Never present demo submissions as real customer enquiries, and never claim business results that weren't measured: no revenue, no deals won, no "before vs after" response-time improvements.
 - Only test-suite measurements (reply times, credits per route, routing and fallback behaviour, pass rates) may be reported, labelled as **measured on synthetic data**.
@@ -261,7 +261,7 @@ Measured on synthetic test data during the build (§1.1). There are no "before" 
 
 ## 9. Assumptions
 
-1. Media & Software Manager is the author's own company. The form is a demo with synthetic data, and no lead volumes or baselines are assumed (§1.1).
+1. Media & Software Manger is the author's own company. The form is a demo with synthetic data, and no lead volumes or baselines are assumed (§1.1).
 2. A single owner receives alerts in the private Slack channel #leadflow-alerts in a free Slack workspace, with phone push enabled for every message in that channel.
 3. Leads and replies are in English. Non-English messages are scored, but replies stay in English (Phase 1).
 4. Make account region and webhook host don't affect the design. The URL is kept in `.env` and in Netlify environment variables.

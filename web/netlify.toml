@@ -1,4 +1,4 @@
-# Netlify config for the Media & Software Manager LeadFlow demo site.
+# Netlify config for the Media & Software Manger LeadFlow demo site.
 # In the Netlify UI set "Base directory" to `web`; paths below are relative to it.
 
 [build]

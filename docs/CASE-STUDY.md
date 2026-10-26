@@ -1,6 +1,6 @@
 # LeadFlow: AI lead qualification and routing on Make.com
 
-**Built by Media & Software Manager** · Make.com · Google Gemini · Google Sheets · Slack · Gmail · Netlify
+**Built by Media & Software Manger** · Make.com · Google Gemini · Google Sheets · Slack · Gmail · Netlify
 
 > **About the data.** LeadFlow runs on a **demo** form. Every lead shown here and in the video is **synthetic test data**, and every number below was **measured** during the build (4–5 October 2026). No customer outcomes are claimed.
 

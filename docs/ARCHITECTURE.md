@@ -239,7 +239,7 @@ message: {message}
 LEAD>>>
 ```
 
-The system instruction is the canonical prompt in `prompts/lead-scoring.md` (`lead-scoring@1.1`, which also includes 4 synthetic few-shot examples). It defines the rubric, the tier bands (hot ≥ 70, warm 40–69, cold < 40), the spam definition (including spam keywords such as casino, crypto, forex, backlinks, guest posts and guaranteed rankings), enum meanings, length limits and the anti-injection rule.
+The system instruction is the canonical prompt in `prompts/lead-scoring.md` (`lead-scoring@1.2`, which also includes 4 synthetic few-shot examples). It defines the rubric, the tier bands (hot ≥ 70, warm 40–69, cold < 40), the spam definition (including spam keywords such as casino, crypto, forex, backlinks, guest posts and guaranteed rankings), enum meanings, length limits and the anti-injection rule.
 
 #### Request body (built by M12, sent by M13)
 ```json
@@ -302,7 +302,7 @@ Response path used by M14: `M13.data.candidates[1].content.parts[1].text` (Make 
 
 ### 4.4 Google Sheets
 
-One spreadsheet, `LeadFlow – Media & Software Manager (synthetic)`, with three tabs. Row 1 holds the headers below, exactly as written. **Never reorder columns after the scenario is built.** Every Sheets write module uses **Value input option = User entered**, so the apostrophe prefix from the M10 safe-text variables marks a value as text without being displayed (#14).
+One spreadsheet, `LeadFlow – Media & Software Manger (synthetic)`, with three tabs. Row 1 holds the headers below, exactly as written. **Never reorder columns after the scenario is built.** Every Sheets write module uses **Value input option = User entered**, so the apostrophe prefix from the M10 safe-text variables marks a value as text without being displayed (#14).
 
 #### Tab `Leads`
 | Col | Header | Type | Written by | Notes |
@@ -328,7 +328,7 @@ One spreadsheet, `LeadFlow – Media & Software Manager (synthetic)`, with three
 | S | `summary` | text ≤ 160 | add | `M15.summary` |
 | T | `next_action` | text ≤ 140 | add | `M15.next_action` |
 | U | `scoring_method` | `ai` / `rules_fallback` | add | |
-| V | `prompt_version` | text | add | literal, currently `lead-scoring@1.1`; must match the prompt file header |
+| V | `prompt_version` | text | add | literal, currently `lead-scoring@1.2`; must match the prompt file header |
 | W | `ai_error` | text | add | empty, `ai_unavailable` (timeout/network), `http_<code>`, or `invalid_output` |
 | X | `actions_planned` | text | add | hot `slack_alert,email_personal`; warm `email_standard`; cold `none` |
 | Y | `status` | enum | add (`new`), then manual | new / contacted / qualified / won / lost / not_a_fit |
@@ -542,21 +542,21 @@ No auto-retry: if the lead is missing from the sheet, add it by hand from this a
 - `Operations left` is a Make system variable (#15). The error type and message come from the failed module's error items (#37).
 - The `<URL|text>` link is the only Slack link syntax in either template, and its URL is a fixed value, never lead input. Unfurling is off (#41).
 
-**Gmail, hot (M18, Raw HTML).** Subject: `Your {service label} project with Media & Software Manager: next steps`
+**Gmail, hot (M18, Raw HTML).** Subject: `Your {service label} project with Media & Software Manger: next steps`
 ```html
 <p>Hi {escapeHTML(first_name)},</p>
 <p>{escapeHTML(opener)}</p>
 <p>I've passed your enquiry to one of our founders, who will be in touch personally within the next business hour.
 If it's easier, you can grab a 20-minute call slot here: <a href="{BOOKING_URL}">book a call</a>.</p>
-<p>Best regards,<br>The Media &amp; Software Manager team</p>
+<p>Best regards,<br>The Media &amp; Software Manger team</p>
 ```
 
-**Gmail, warm (M20, Raw HTML).** Subject: `Thanks for contacting Media & Software Manager`
+**Gmail, warm (M20, Raw HTML).** Subject: `Thanks for contacting Media & Software Manger`
 ```html
 <p>Hi {escapeHTML(first_name)},</p>
 <p>Thanks for getting in touch about {service label}. We've received your message and a member of the team will reply within one business day.</p>
 <p>In the meantime, you can see some of our recent work at <a href="{PORTFOLIO_URL}">our portfolio</a>.</p>
-<p>Best regards,<br>The Media &amp; Software Manager team</p>
+<p>Best regards,<br>The Media &amp; Software Manger team</p>
 ```
 `{service label}` = `switch(1.service; web_design; web design; seo; SEO; paid_ads; paid advertising; branding; branding; your project)`. These labels are fixed values, so they need no escaping.
 

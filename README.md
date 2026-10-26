@@ -1,6 +1,6 @@
 # LeadFlow
 
-**AI lead capture, qualification and routing on Make.com.** Built by **Media & Software Manager** on free tiers only.
+**AI lead capture, qualification and routing on Make.com.** Built by **Media & Software Manger** on free tiers only.
 
 Every enquiry gets an on-page reply in about **1 second**. Gemini scores it, hot leads reach the owner in **Slack within seconds** with a personalised email to the lead, and spam never reaches anyone. That costs **≤ 12 Make credits per lead**, and bots and bad keys cost **0**.
 
@@ -10,8 +10,8 @@ Every enquiry gets an on-page reply in about **1 second**. Gemini scores it, hot
 |---|---|
 | 🎥 Demo video | [docs/demo-video.mp4](docs/demo-video.mp4) |
 | 🌐 Live demo form | https://m-and-s-leadflow-demo.netlify.app/ |
-| 📄 Case study | [docs/CASE-STUDY.md](docs/CASE-STUDY.md) · [on the M&S Manager site](https://www.mediaandsoftwaremanager.com/automation#work) |
-| 🏢 Built by | [M&S Manager: Zapier, Make and HubSpot automation for SaaS](https://www.mediaandsoftwaremanager.com/automation#work) |
+| 📄 Case study | [docs/CASE-STUDY.md](docs/CASE-STUDY.md) · [on the M&S Manger site](https://www.mediaandsoftwaremanager.com/automation#work) |
+| 🏢 Built by | [M&S Manger: Zapier, Make and HubSpot automation for SaaS](https://www.mediaandsoftwaremanager.com/automation#work) |
 | 🖼️ Screenshots | [scenario](docs/screenshots/make-scenario.png) · [Slack alerts](docs/screenshots/slack-hot-alerts.png) · [landing page](docs/screenshots/landing-page-dark.png) |
 | 🧩 Build spec | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) · [docs/PRD.md](docs/PRD.md) · [docs/DECISIONS.md](docs/DECISIONS.md) |
 
@@ -47,7 +47,7 @@ Make.com (Free) · Google Gemini (free tier, Flash-Lite) · Google Sheets · Sla
 ## Repository
 ```
 docs/        PRD, architecture, decisions log, case study, demo video, screenshots
-prompts/     versioned Gemini system prompt (lead-scoring@1.1)
+prompts/     versioned Gemini system prompt (lead-scoring@1.2)
 web/         landing page, Netlify Function proxy, netlify.toml
 tools/       Gemini smoke test, proxy unit tests, send.sh test sender, JSON schemas
 tests/       synthetic payloads + manifest
